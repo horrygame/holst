@@ -45,8 +45,10 @@ io.on('connection', (socket) => {
   // Принимаем событие рисования
   socket.on('draw', (data) => {
     const { x0, y0, x1, y1, color } = data;
+    // Обновляем серверную копию
     drawLine(x0, y0, x1, y1, color);
-    socket.broadcast.emit('draw', data);
+    // Рассылаем ВСЕМ пользователям (включая отправителя)
+    io.emit('draw', data);
   });
 
   // Очистка холста для всех
