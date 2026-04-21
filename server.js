@@ -8,21 +8,21 @@ const io = socketIo(server);
 
 app.use(express.static('public'));
 
-const WIDTH = 128;
-const HEIGHT = 128;
-const PIXEL_COUNT = WIDTH * HEIGHT;
+const CELLS_W = 128;
+const CELLS_H = 128;
+const TOTAL_CELLS = CELLS_W * CELLS_H;
 
-// Храним цвета пикселей (RGB)
-let canvasState = new Uint8ClampedArray(PIXEL_COUNT * 3);
-for (let i = 0; i < PIXEL_COUNT * 3; i += 3) {
-    canvasState[i] = 255;   // R
-    canvasState[i+1] = 255; // G
-    canvasState[i+2] = 255; // B
+// Храним цвета для каждой клетки (RGB)
+let canvasState = new Uint8ClampedArray(TOTAL_CELLS * 3);
+for (let i = 0; i < TOTAL_CELLS * 3; i += 3) {
+    canvasState[i] = 255;
+    canvasState[i+1] = 255;
+    canvasState[i+2] = 255;
 }
 
-function setPixel(x, y, r, g, b) {
-    if (x >= 0 && x < WIDTH && y >= 0 && y < HEIGHT) {
-        const idx = (y * WIDTH + x) * 3;
+function setCell(x, y, r, g, b) {
+    if (x >= 0 && x < CELLS_W && y >= 0 && y < CELLS_H) {
+        const idx = (y * CELLS_W + x) * 3;
         canvasState[idx] = r;
         canvasState[idx+1] = g;
         canvasState[idx+2] = b;
@@ -40,24 +40,21 @@ function hexToRgb(hex) {
 io.on('connection', (socket) => {
     console.log('Пользователь подключился');
 
-    // Отправляем новому пользователю состояние холста
     socket.emit('init', {
-        width: WIDTH,
-        height: HEIGHT,
+        width: CELLS_W,
+        height: CELLS_H,
         buffer: canvasState.buffer
     });
 
-    // Закрашивание одного пикселя
-    socket.on('pixel', (data) => {
+    socket.on('cell', (data) => {
         const { x, y, colorHex } = data;
         const [r, g, b] = hexToRgb(colorHex);
-        setPixel(x, y, r, g, b);
-        io.emit('pixel', { x, y, colorHex });
+        setCell(x, y, r, g, b);
+        io.emit('cell', { x, y, colorHex });
     });
 
-    // Очистка холста
     socket.on('clear', () => {
-        for (let i = 0; i < PIXEL_COUNT * 3; i += 3) {
+        for (let i = 0; i < TOTAL_CELLS * 3; i += 3) {
             canvasState[i] = 255;
             canvasState[i+1] = 255;
             canvasState[i+2] = 255;
@@ -72,5 +69,5 @@ io.on('connection', (socket) => {
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-    console.log(`Пиксель-арт сервер 128x128 запущен на порту ${PORT}`);
+    console.log(`Сервер пиксель-арта 128x128 (крупные клетки) на порту ${PORT}`);
 });
