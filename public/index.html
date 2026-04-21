@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Пиксель-арт холст 128x128</title>
+    <title>Пиксель-арт 128x128 — большие клетки</title>
     <style>
         body {
             margin: 0;
@@ -14,7 +14,7 @@
         .canvas-container {
             overflow: auto;
             max-width: 100%;
-            max-height: 80vh;
+            max-height: 85vh;
             border: 2px solid #333;
             background: #fff;
             display: inline-block;
@@ -22,6 +22,7 @@
         canvas {
             cursor: crosshair;
             background: white;
+            /* реальный размер 1024x1024, но можно масштабировать через width/height */
             width: auto;
             height: auto;
             max-width: 100%;
@@ -51,7 +52,7 @@
     </style>
 </head>
 <body>
-    <h1>🎨 Совместный пиксель-арт 128×128</h1>
+    <h1>🎨 Совместный пиксель-арт 128×128 (крупные клетки)</h1>
     <div class="toolbar">
         <label>Цвет: </label>
         <input type="color" id="colorPicker" value="#ff0000">
@@ -60,10 +61,10 @@
         <span style="margin-left: 20px;">🖱️ Кликните по клетке, чтобы закрасить</span>
     </div>
     <div class="canvas-container">
-        <canvas id="pixelCanvas" width="128" height="128"></canvas>
+        <canvas id="pixelCanvas" width="1024" height="1024"></canvas>
     </div>
     <div class="info">
-        Холст 128×128 пикселей. Можно рисовать по одному пикселю.
+        Холст 128×128 клеток. Каждая клетка — 8×8 пикселей. Общий размер 1024×1024.
     </div>
     
     <script src="/socket.io/socket.io.js"></script>
