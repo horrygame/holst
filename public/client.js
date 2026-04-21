@@ -2,63 +2,41 @@ const canvas = document.getElementById('pixelCanvas');
 const ctx = canvas.getContext('2d');
 const colorPicker = document.getElementById('colorPicker');
 const colorPreview = document.getElementById('colorPreview');
-const clearBtn = document.getElementById('clearBtn');
 
 let currentColor = '#ff0000';
 const socket = io();
-
-// Размер одной клетки в пикселях
-const CELL_SIZE = 8;   // 128 * 8 = 1024
-const CELLS_W = 128;
-const CELLS_H = 128;
 
 colorPicker.addEventListener('input', (e) => {
     currentColor = e.target.value;
     colorPreview.style.backgroundColor = currentColor;
 });
 
-// Рисование всей сетки по данным от сервера
-function drawGridFromState(rgbData) {
-    for (let y = 0; y < CELLS_H; y++) {
-        for (let x = 0; x < CELLS_W; x++) {
-            const idx = (y * CELLS_W + x) * 3;
-            const r = rgbData[idx];
-            const g = rgbData[idx+1];
-            const b = rgbData[idx+2];
-            ctx.fillStyle = `rgb(${r},${g},${b})`;
-            ctx.fillRect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
-        }
-    }
-}
-
-// Инициализация от сервера
 socket.on('init', (data) => {
     const { width, height, buffer } = data;
-    if (width !== CELLS_W || height !== CELLS_H) {
-        console.warn('Размеры не совпадают');
-    }
+    canvas.width = width;
+    canvas.height = height;
+    
     const rgbData = new Uint8ClampedArray(buffer);
-    drawGridFromState(rgbData);
-    console.log('Холст инициализирован (128x128, клетка 8px)');
+    const imageData = ctx.createImageData(width, height);
+    for (let i = 0; i < width * height; i++) {
+        imageData.data[i*4] = rgbData[i*3];
+        imageData.data[i*4+1] = rgbData[i*3+1];
+        imageData.data[i*4+2] = rgbData[i*3+2];
+        imageData.data[i*4+3] = 255;
+    }
+    ctx.putImageData(imageData, 0, 0);
+    console.log('Холст 128x128 инициализирован');
 });
 
-// Обновление одной клетки от сервера
-socket.on('cell', (data) => {
+socket.on('pixel', (data) => {
     const { x, y, colorHex } = data;
     ctx.fillStyle = colorHex;
-    ctx.fillRect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+    ctx.fillRect(x, y, 1, 1);
 });
 
-// Очистка
-socket.on('clearAll', () => {
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-});
-
-// Конвертация клика в координаты клетки (с учётом масштаба)
-function getCellFromClick(e) {
+function getPixelFromClick(e) {
     const rect = canvas.getBoundingClientRect();
-    const scaleX = canvas.width / rect.width;   // canvas.width = 1024
+    const scaleX = canvas.width / rect.width;
     const scaleY = canvas.height / rect.height;
     let clientX, clientY;
     if (e.touches) {
@@ -70,32 +48,29 @@ function getCellFromClick(e) {
     }
     let canvasX = (clientX - rect.left) * scaleX;
     let canvasY = (clientY - rect.top) * scaleY;
-    canvasX = Math.min(Math.max(0, canvasX), canvas.width - 1);
-    canvasY = Math.min(Math.max(0, canvasY), canvas.height - 1);
-    const cellX = Math.floor(canvasX / CELL_SIZE);
-    const cellY = Math.floor(canvasY / CELL_SIZE);
-    return { x: Math.min(cellX, CELLS_W-1), y: Math.min(cellY, CELLS_H-1) };
+    canvasX = Math.floor(Math.min(Math.max(0, canvasX), canvas.width - 1));
+    canvasY = Math.floor(Math.min(Math.max(0, canvasY), canvas.height - 1));
+    return { x: canvasX, y: canvasY };
 }
 
-function paintCell(e) {
-    const { x, y } = getCellFromClick(e);
-    socket.emit('cell', { x, y, colorHex: currentColor });
-    // Локально рисуем для отзывчивости
+function paintPixel(e) {
+    const { x, y } = getPixelFromClick(e);
+    socket.emit('pixel', { x, y, colorHex: currentColor });
     ctx.fillStyle = currentColor;
-    ctx.fillRect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+    ctx.fillRect(x, y, 1, 1);
 }
 
 let painting = false;
 
 function startPaint(e) {
     painting = true;
-    paintCell(e);
+    paintPixel(e);
 }
 
 function doPaint(e) {
     if (!painting) return;
     e.preventDefault();
-    paintCell(e);
+    paintPixel(e);
 }
 
 function stopPaint() {
@@ -110,9 +85,3 @@ canvas.addEventListener('mouseleave', stopPaint);
 canvas.addEventListener('touchstart', startPaint);
 canvas.addEventListener('touchmove', doPaint);
 canvas.addEventListener('touchend', stopPaint);
-
-clearBtn.addEventListener('click', () => {
-    if (confirm('Очистить весь холст для всех?')) {
-        socket.emit('clear');
-    }
-});
