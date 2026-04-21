@@ -37,8 +37,6 @@ function hexToRgb(hex) {
 }
 
 io.on('connection', (socket) => {
-    console.log('Пользователь подключился');
-
     socket.emit('init', {
         width: WIDTH,
         height: HEIGHT,
@@ -52,17 +50,10 @@ io.on('connection', (socket) => {
         io.emit('pixel', { x, y, colorHex });
     });
 
-    // Обработка очистки удалена (кнопки нет, но на всякий случай оставим заглушку)
-    socket.on('clear', () => {
-        // ничего не делаем
-    });
-
-    socket.on('disconnect', () => {
-        console.log('Пользователь отключился');
-    });
+    socket.on('disconnect', () => {});
 });
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-    console.log(`Сервер 128x128 с увеличенными клетками запущен на порту ${PORT}`);
+    console.log(`Сервер 128x128 запущен на порту ${PORT}`);
 });
