@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Совместный интернет-холст</title>
+    <title>Совместный интернет-холст 1024x1024</title>
     <style>
         body {
             margin: 0;
@@ -11,11 +11,22 @@
             background: #f0f0f0;
             text-align: center;
         }
-        canvas {
+        .canvas-container {
+            overflow: auto;
+            max-width: 100%;
+            max-height: 80vh;
             border: 2px solid #333;
+            background: #fff;
+            display: inline-block;
+        }
+        canvas {
             cursor: crosshair;
             background: white;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            width: auto;
+            height: auto;
+            /* масштабируем через CSS, но реальное разрешение 1024x1024 */
+            max-width: 100%;
+            max-height: 100%;
         }
         .toolbar {
             margin-bottom: 10px;
@@ -33,10 +44,15 @@
             font-size: 16px;
             cursor: pointer;
         }
+        .info {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #555;
+        }
     </style>
 </head>
 <body>
-    <h1>🎨 Общий холст — рисуйте вместе!</h1>
+    <h1>🎨 Общий холст 1024×1024</h1>
     <div class="toolbar">
         <label>Цвет: </label>
         <input type="color" id="colorPicker" value="#ff0000">
@@ -44,7 +60,12 @@
         <button id="clearBtn">Очистить холст (для всех)</button>
         <span style="margin-left: 20px;">✏️ Нажмите и ведите мышкой, чтобы рисовать</span>
     </div>
-    <canvas id="drawCanvas" width="800" height="600"></canvas>
+    <div class="canvas-container">
+        <canvas id="drawCanvas" width="1024" height="1024"></canvas>
+    </div>
+    <div class="info">
+        Реальный размер холста: 1024×1024 пикселя. Скролльте или уменьшите масштаб браузера.
+    </div>
     
     <script src="/socket.io/socket.io.js"></script>
     <script src="client.js"></script>
