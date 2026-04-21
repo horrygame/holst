@@ -12,7 +12,6 @@ colorPicker.addEventListener('input', (e) => {
     colorPreview.style.backgroundColor = currentColor;
 });
 
-// Инициализация: получение всего холста
 socket.on('init', (data) => {
     const { width, height, buffer } = data;
     canvas.width = width;
@@ -21,33 +20,29 @@ socket.on('init', (data) => {
     const rgbData = new Uint8ClampedArray(buffer);
     const imageData = ctx.createImageData(width, height);
     for (let i = 0; i < width * height; i++) {
-        imageData.data[i * 4] = rgbData[i * 3];
-        imageData.data[i * 4 + 1] = rgbData[i * 3 + 1];
-        imageData.data[i * 4 + 2] = rgbData[i * 3 + 2];
-        imageData.data[i * 4 + 3] = 255;
+        imageData.data[i*4] = rgbData[i*3];
+        imageData.data[i*4+1] = rgbData[i*3+1];
+        imageData.data[i*4+2] = rgbData[i*3+2];
+        imageData.data[i*4+3] = 255;
     }
     ctx.putImageData(imageData, 0, 0);
-    console.log('Холст инициализирован');
+    console.log('Холст 128x128 инициализирован');
 });
 
-// Обновление одного пикселя от сервера
 socket.on('pixel', (data) => {
     const { x, y, colorHex } = data;
-    // Закрашиваем пиксель на canvas
     ctx.fillStyle = colorHex;
     ctx.fillRect(x, y, 1, 1);
 });
 
-// Очистка
 socket.on('clearAll', () => {
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 });
 
-// Конвертация координат мыши в пиксель холста (учитывая масштаб CSS)
 function getPixelFromClick(e) {
     const rect = canvas.getBoundingClientRect();
-    const scaleX = canvas.width / rect.width;   // canvas.width = 1024
+    const scaleX = canvas.width / rect.width;
     const scaleY = canvas.height / rect.height;
     let clientX, clientY;
     if (e.touches) {
@@ -64,29 +59,24 @@ function getPixelFromClick(e) {
     return { x: canvasX, y: canvasY };
 }
 
-// Обработчик клика по холсту
-function handleCanvasClick(e) {
+function paintPixel(e) {
     const { x, y } = getPixelFromClick(e);
-    // Отправляем на сервер
     socket.emit('pixel', { x, y, colorHex: currentColor });
-    // Локально не рисуем — ждём подтверждения от сервера (чтобы синхронизировать)
-    // Но можно рисовать и сразу, чтобы не было задержки — добавим для отзывчивости
     ctx.fillStyle = currentColor;
     ctx.fillRect(x, y, 1, 1);
 }
 
-// Также можно рисовать при движении с зажатой кнопкой (для заливки нескольких клеток)
 let painting = false;
 
 function startPaint(e) {
     painting = true;
-    handleCanvasClick(e); // закрасить первую клетку
+    paintPixel(e);
 }
 
-function paint(e) {
+function doPaint(e) {
     if (!painting) return;
     e.preventDefault();
-    handleCanvasClick(e);
+    paintPixel(e);
 }
 
 function stopPaint() {
@@ -94,18 +84,16 @@ function stopPaint() {
 }
 
 canvas.addEventListener('mousedown', startPaint);
-canvas.addEventListener('mousemove', paint);
+canvas.addEventListener('mousemove', doPaint);
 canvas.addEventListener('mouseup', stopPaint);
 canvas.addEventListener('mouseleave', stopPaint);
 
-// Touch-события для мобильных
 canvas.addEventListener('touchstart', startPaint);
-canvas.addEventListener('touchmove', paint);
+canvas.addEventListener('touchmove', doPaint);
 canvas.addEventListener('touchend', stopPaint);
 
-// Очистка холста
 clearBtn.addEventListener('click', () => {
-    if (confirm('Очистить весь холст для всех? Это необратимо.')) {
+    if (confirm('Очистить весь холст для всех?')) {
         socket.emit('clear');
     }
 });
