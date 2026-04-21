@@ -15,57 +15,56 @@ colorPicker.addEventListener('input', (e) => {
     colorPreview.style.backgroundColor = currentColor;
 });
 
-// Инициализация холста от сервера
+// Инициализация: получаем бинарные данные холста
 socket.on('init', (data) => {
-    const { canvasState, width, height } = data;
+    const { width, height, buffer } = data;
     canvas.width = width;
     canvas.height = height;
-    const imgData = ctx.getImageData(0, 0, width, height);
-    for (let x = 0; x < width; x++) {
-        for (let y = 0; y < height; y++) {
-            const color = canvasState[x][y];
-            const idx = (y * width + x) * 4;
-            const r = parseInt(color.slice(1,3), 16);
-            const g = parseInt(color.slice(3,5), 16);
-            const b = parseInt(color.slice(5,7), 16);
-            imgData.data[idx] = r;
-            imgData.data[idx+1] = g;
-            imgData.data[idx+2] = b;
-            imgData.data[idx+3] = 255;
-        }
+    
+    // Преобразуем ArrayBuffer в Uint8ClampedArray (RGB)
+    const rgbData = new Uint8ClampedArray(buffer);
+    // Создаём ImageData (нужен RGBA, поэтому добавляем альфа-канал = 255)
+    const imageData = ctx.createImageData(width, height);
+    for (let i = 0; i < width * height; i++) {
+        const r = rgbData[i * 3];
+        const g = rgbData[i * 3 + 1];
+        const b = rgbData[i * 3 + 2];
+        imageData.data[i * 4] = r;
+        imageData.data[i * 4 + 1] = g;
+        imageData.data[i * 4 + 2] = b;
+        imageData.data[i * 4 + 3] = 255;
     }
-    ctx.putImageData(imgData, 0, 0);
-    console.log('Холст инициализирован');
+    ctx.putImageData(imageData, 0, 0);
+    console.log('Холст инициализирован (1024x1024)');
 });
 
-// Рисование по команде от сервера (свои и чужие)
+// Получение команды рисования от сервера
 socket.on('draw', (data) => {
-    console.log('draw command', data);
-    drawOnCanvas(data.x0, data.y0, data.x1, data.y1, data.color);
+    drawOnCanvas(data.x0, data.y0, data.x1, data.y1, data.colorHex);
 });
 
 // Очистка
 socket.on('clearAll', () => {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     console.log('Холст очищен');
 });
 
-// Локальное рисование (отправляем на сервер, но сами не рисуем)
-function drawOnCanvas(x0, y0, x1, y1, color) {
+// Функция рисования линии на канвасе
+function drawOnCanvas(x0, y0, x1, y1, colorHex) {
     ctx.beginPath();
     ctx.moveTo(x0, y0);
     ctx.lineTo(x1, y1);
-    ctx.strokeStyle = color;
+    ctx.strokeStyle = colorHex;
     ctx.lineWidth = 5;
     ctx.lineCap = 'round';
     ctx.stroke();
 }
 
-function getMouseCoords(e) {
+// Получение координат мыши/касания относительно canvas (учитывая реальные пиксели)
+function getCanvasCoords(e) {
     const rect = canvas.getBoundingClientRect();
-    const scaleX = canvas.width / rect.width;
+    const scaleX = canvas.width / rect.width;   // canvas.width = 1024, rect.width = CSS-ширина
     const scaleY = canvas.height / rect.height;
     let clientX, clientY;
     if (e.touches) {
@@ -75,28 +74,35 @@ function getMouseCoords(e) {
         clientX = e.clientX;
         clientY = e.clientY;
     }
-    let x = (clientX - rect.left) * scaleX;
-    let y = (clientY - rect.top) * scaleY;
-    x = Math.min(Math.max(0, x), canvas.width - 1);
-    y = Math.min(Math.max(0, y), canvas.height - 1);
-    return { x: Math.floor(x), y: Math.floor(y) };
+    let canvasX = (clientX - rect.left) * scaleX;
+    let canvasY = (clientY - rect.top) * scaleY;
+    canvasX = Math.min(Math.max(0, canvasX), canvas.width - 1);
+    canvasY = Math.min(Math.max(0, canvasY), canvas.height - 1);
+    return { x: Math.floor(canvasX), y: Math.floor(canvasY) };
 }
 
 function startDrawing(e) {
     drawing = true;
-    const { x, y } = getMouseCoords(e);
+    const { x, y } = getCanvasCoords(e);
     lastX = x;
     lastY = y;
-    // Отправляем точку (линию нулевой длины) на сервер
-    socket.emit('draw', { x0: lastX, y0: lastY, x1: lastX, y1: lastY, color: currentColor });
+    // Отправляем точку
+    socket.emit('draw', {
+        x0: lastX, y0: lastY,
+        x1: lastX, y1: lastY,
+        colorHex: currentColor
+    });
 }
 
 function draw(e) {
     if (!drawing) return;
     e.preventDefault();
-    const { x, y } = getMouseCoords(e);
-    // Отправляем отрезок от last до текущей точки
-    socket.emit('draw', { x0: lastX, y0: lastY, x1: x, y1: y, color: currentColor });
+    const { x, y } = getCanvasCoords(e);
+    socket.emit('draw', {
+        x0: lastX, y0: lastY,
+        x1: x, y1: y,
+        colorHex: currentColor
+    });
     lastX = x;
     lastY = y;
 }
