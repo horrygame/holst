@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Пиксель-арт 128x128 — большие клетки</title>
+    <title>Пиксель-арт холст 128x128</title>
     <style>
         body {
             margin: 0;
@@ -22,11 +22,13 @@
         canvas {
             cursor: crosshair;
             background: white;
-            /* реальный размер 1024x1024, но можно масштабировать через width/height */
-            width: auto;
-            height: auto;
-            max-width: 100%;
-            max-height: 100%;
+            /* Увеличиваем отображение: каждая клетка будет, например, 6x6 пикселей экрана */
+            width: 768px;
+            height: 768px;
+            max-width: 90vw;
+            max-height: 90vw;
+            image-rendering: crisp-edges; /* для чётких клеток */
+            image-rendering: pixelated;
         }
         .toolbar {
             margin-bottom: 10px;
@@ -39,11 +41,6 @@
             vertical-align: middle;
             margin-left: 10px;
         }
-        button {
-            padding: 8px 16px;
-            font-size: 16px;
-            cursor: pointer;
-        }
         .info {
             margin-top: 10px;
             font-size: 14px;
@@ -52,19 +49,18 @@
     </style>
 </head>
 <body>
-    <h1>🎨 Совместный пиксель-арт 128×128 (крупные клетки)</h1>
+    <h1>🎨 Совместный пиксель-арт 128×128</h1>
     <div class="toolbar">
         <label>Цвет: </label>
         <input type="color" id="colorPicker" value="#ff0000">
         <div class="color-preview" id="colorPreview" style="background: #ff0000"></div>
-        <button id="clearBtn">Очистить всё</button>
         <span style="margin-left: 20px;">🖱️ Кликните по клетке, чтобы закрасить</span>
     </div>
     <div class="canvas-container">
-        <canvas id="pixelCanvas" width="1024" height="1024"></canvas>
+        <canvas id="pixelCanvas" width="128" height="128"></canvas>
     </div>
     <div class="info">
-        Холст 128×128 клеток. Каждая клетка — 8×8 пикселей. Общий размер 1024×1024.
+        Холст 128×128 клеток, каждая клетка увеличенная. Рисуйте вместе!
     </div>
     
     <script src="/socket.io/socket.io.js"></script>
