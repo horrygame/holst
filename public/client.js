@@ -15,6 +15,7 @@ colorPicker.addEventListener('input', (e) => {
     colorPreview.style.backgroundColor = currentColor;
 });
 
+// Инициализация холста от сервера
 socket.on('init', (data) => {
     const { canvasState, width, height } = data;
     canvas.width = width;
@@ -34,18 +35,24 @@ socket.on('init', (data) => {
         }
     }
     ctx.putImageData(imgData, 0, 0);
+    console.log('Холст инициализирован');
 });
 
+// Рисование по команде от сервера (свои и чужие)
 socket.on('draw', (data) => {
+    console.log('draw command', data);
     drawOnCanvas(data.x0, data.y0, data.x1, data.y1, data.color);
 });
 
+// Очистка
 socket.on('clearAll', () => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+    console.log('Холст очищен');
 });
 
+// Локальное рисование (отправляем на сервер, но сами не рисуем)
 function drawOnCanvas(x0, y0, x1, y1, color) {
     ctx.beginPath();
     ctx.moveTo(x0, y0);
@@ -80,7 +87,7 @@ function startDrawing(e) {
     const { x, y } = getMouseCoords(e);
     lastX = x;
     lastY = y;
-    drawOnCanvas(lastX, lastY, lastX, lastY, currentColor);
+    // Отправляем точку (линию нулевой длины) на сервер
     socket.emit('draw', { x0: lastX, y0: lastY, x1: lastX, y1: lastY, color: currentColor });
 }
 
@@ -88,7 +95,7 @@ function draw(e) {
     if (!drawing) return;
     e.preventDefault();
     const { x, y } = getMouseCoords(e);
-    drawOnCanvas(lastX, lastY, x, y, currentColor);
+    // Отправляем отрезок от last до текущей точки
     socket.emit('draw', { x0: lastX, y0: lastY, x1: x, y1: y, color: currentColor });
     lastX = x;
     lastY = y;
