@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Совместный интернет-холст 1024x1024</title>
+    <title>Пиксель-арт холст 1024x1024</title>
     <style>
         body {
             margin: 0;
@@ -22,9 +22,9 @@
         canvas {
             cursor: crosshair;
             background: white;
+            /* Масштабируем для удобства, но реальное разрешение 1024x1024 */
             width: auto;
             height: auto;
-            /* масштабируем через CSS, но реальное разрешение 1024x1024 */
             max-width: 100%;
             max-height: 100%;
         }
@@ -47,24 +47,23 @@
         .info {
             margin-top: 10px;
             font-size: 14px;
-            color: #555;
         }
     </style>
 </head>
 <body>
-    <h1>🎨 Общий холст 1024×1024</h1>
+    <h1>🎨 Совместный пиксель-арт 1024×1024</h1>
     <div class="toolbar">
         <label>Цвет: </label>
         <input type="color" id="colorPicker" value="#ff0000">
         <div class="color-preview" id="colorPreview" style="background: #ff0000"></div>
-        <button id="clearBtn">Очистить холст (для всех)</button>
-        <span style="margin-left: 20px;">✏️ Нажмите и ведите мышкой, чтобы рисовать</span>
+        <button id="clearBtn">Очистить всё</button>
+        <span style="margin-left: 20px;">🖱️ Кликните по любой клетке, чтобы закрасить</span>
     </div>
     <div class="canvas-container">
-        <canvas id="drawCanvas" width="1024" height="1024"></canvas>
+        <canvas id="pixelCanvas" width="1024" height="1024"></canvas>
     </div>
     <div class="info">
-        Реальный размер холста: 1024×1024 пикселя. Скролльте или уменьшите масштаб браузера.
+        Размер холста: 1024×1024 пикселя. Каждый пиксель — это клетка. Используйте масштабирование браузера или скролл.
     </div>
     
     <script src="/socket.io/socket.io.js"></script>
