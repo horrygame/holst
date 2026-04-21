@@ -1,14 +1,12 @@
 const canvas = document.getElementById('pixelCanvas');
 const ctx = canvas.getContext('2d');
 const colorPicker = document.getElementById('colorPicker');
-const colorPreview = document.getElementById('colorPreview');
 
 let currentColor = '#ff0000';
 const socket = io();
 
 colorPicker.addEventListener('input', (e) => {
     currentColor = e.target.value;
-    colorPreview.style.backgroundColor = currentColor;
 });
 
 socket.on('init', (data) => {
@@ -25,7 +23,6 @@ socket.on('init', (data) => {
         imageData.data[i*4+3] = 255;
     }
     ctx.putImageData(imageData, 0, 0);
-    console.log('Холст 128x128 инициализирован');
 });
 
 socket.on('pixel', (data) => {
