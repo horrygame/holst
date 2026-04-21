@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Совместный интернет-холст</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: #f0f0f0;
+            text-align: center;
+        }
+        canvas {
+            border: 2px solid #333;
+            cursor: crosshair;
+            background: white;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .toolbar {
+            margin-bottom: 10px;
+        }
+        .color-preview {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 2px solid #333;
+            vertical-align: middle;
+            margin-left: 10px;
+        }
+        button {
+            padding: 8px 16px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎨 Общий холст — рисуйте вместе!</h1>
+    <div class="toolbar">
+        <label>Цвет: </label>
+        <input type="color" id="colorPicker" value="#ff0000">
+        <div class="color-preview" id="colorPreview" style="background: #ff0000"></div>
+        <button id="clearBtn">Очистить холст (для всех)</button>
+        <span style="margin-left: 20px;">✏️ Нажмите и ведите мышкой, чтобы рисовать</span>
+    </div>
+    <canvas id="drawCanvas" width="800" height="600"></canvas>
+    
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="client.js"></script>
+</body>
+</html>
