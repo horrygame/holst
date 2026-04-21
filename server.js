@@ -8,17 +8,16 @@ const io = socketIo(server);
 
 app.use(express.static('public'));
 
-const WIDTH = 1024;
-const HEIGHT = 1024;
+const WIDTH = 128;
+const HEIGHT = 128;
 const PIXEL_COUNT = WIDTH * HEIGHT;
 
-// Храним холст как Uint8ClampedArray RGB
+// Храним цвета пикселей (RGB)
 let canvasState = new Uint8ClampedArray(PIXEL_COUNT * 3);
-// Заполняем белым (255,255,255)
 for (let i = 0; i < PIXEL_COUNT * 3; i += 3) {
-    canvasState[i] = 255;
-    canvasState[i+1] = 255;
-    canvasState[i+2] = 255;
+    canvasState[i] = 255;   // R
+    canvasState[i+1] = 255; // G
+    canvasState[i+2] = 255; // B
 }
 
 function setPixel(x, y, r, g, b) {
@@ -41,19 +40,18 @@ function hexToRgb(hex) {
 io.on('connection', (socket) => {
     console.log('Пользователь подключился');
 
-    // Отправляем текущее состояние холста (бинарные данные)
+    // Отправляем новому пользователю состояние холста
     socket.emit('init', {
         width: WIDTH,
         height: HEIGHT,
         buffer: canvasState.buffer
     });
 
-    // Установка одного пикселя
+    // Закрашивание одного пикселя
     socket.on('pixel', (data) => {
         const { x, y, colorHex } = data;
         const [r, g, b] = hexToRgb(colorHex);
         setPixel(x, y, r, g, b);
-        // Рассылаем всем (включая отправителя)
         io.emit('pixel', { x, y, colorHex });
     });
 
@@ -74,5 +72,5 @@ io.on('connection', (socket) => {
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-    console.log(`Пиксель-арт сервер запущен на порту ${PORT} (${WIDTH}x${HEIGHT})`);
+    console.log(`Пиксель-арт сервер 128x128 запущен на порту ${PORT}`);
 });
