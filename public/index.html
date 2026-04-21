@@ -2,67 +2,55 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Пиксель-арт холст 128x128</title>
+    <title>Pixel Canvas</title>
     <style>
-        body {
+        * {
             margin: 0;
-            padding: 20px;
-            font-family: Arial, sans-serif;
-            background: #f0f0f0;
-            text-align: center;
+            padding: 0;
+            box-sizing: border-box;
         }
-        .canvas-container {
-            overflow: auto;
-            max-width: 100%;
-            max-height: 85vh;
-            border: 2px solid #333;
-            background: #fff;
-            display: inline-block;
+        body {
+            background: #1a1a1a;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
         }
         canvas {
+            width: 800px;
+            height: 800px;
+            border: 2px solid #333;
             cursor: crosshair;
-            background: white;
-            /* Увеличиваем отображение: каждая клетка будет, например, 6x6 пикселей экрана */
-            width: 768px;
-            height: 768px;
-            max-width: 90vw;
-            max-height: 90vw;
-            image-rendering: crisp-edges; /* для чётких клеток */
+            image-rendering: crisp-edges;
+            image-rendering: pixelated;
             image-rendering: pixelated;
         }
-        .toolbar {
-            margin-bottom: 10px;
-        }
-        .color-preview {
-            display: inline-block;
-            width: 40px;
-            height: 40px;
+        input {
+            width: 60px;
+            height: 60px;
             border: 2px solid #333;
-            vertical-align: middle;
-            margin-left: 10px;
+            cursor: pointer;
+            background: #fff;
         }
-        .info {
-            margin-top: 10px;
-            font-size: 14px;
-            color: #555;
+        @media (max-width: 850px) {
+            canvas {
+                width: 90vw;
+                height: 90vw;
+            }
         }
     </style>
 </head>
 <body>
-    <h1>🎨 Совместный пиксель-арт 128×128</h1>
-    <div class="toolbar">
-        <label>Цвет: </label>
-        <input type="color" id="colorPicker" value="#ff0000">
-        <div class="color-preview" id="colorPreview" style="background: #ff0000"></div>
-        <span style="margin-left: 20px;">🖱️ Кликните по клетке, чтобы закрасить</span>
-    </div>
-    <div class="canvas-container">
+    <div class="container">
         <canvas id="pixelCanvas" width="128" height="128"></canvas>
+        <input type="color" id="colorPicker" value="#ff0000">
     </div>
-    <div class="info">
-        Холст 128×128 клеток, каждая клетка увеличенная. Рисуйте вместе!
-    </div>
-    
     <script src="/socket.io/socket.io.js"></script>
     <script src="client.js"></script>
 </body>
