@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Пиксель-арт холст 1024x1024</title>
+    <title>Пиксель-арт холст 128x128</title>
     <style>
         body {
             margin: 0;
@@ -22,7 +22,6 @@
         canvas {
             cursor: crosshair;
             background: white;
-            /* Масштабируем для удобства, но реальное разрешение 1024x1024 */
             width: auto;
             height: auto;
             max-width: 100%;
@@ -47,23 +46,24 @@
         .info {
             margin-top: 10px;
             font-size: 14px;
+            color: #555;
         }
     </style>
 </head>
 <body>
-    <h1>🎨 Совместный пиксель-арт 1024×1024</h1>
+    <h1>🎨 Совместный пиксель-арт 128×128</h1>
     <div class="toolbar">
         <label>Цвет: </label>
         <input type="color" id="colorPicker" value="#ff0000">
         <div class="color-preview" id="colorPreview" style="background: #ff0000"></div>
         <button id="clearBtn">Очистить всё</button>
-        <span style="margin-left: 20px;">🖱️ Кликните по любой клетке, чтобы закрасить</span>
+        <span style="margin-left: 20px;">🖱️ Кликните по клетке, чтобы закрасить</span>
     </div>
     <div class="canvas-container">
-        <canvas id="pixelCanvas" width="1024" height="1024"></canvas>
+        <canvas id="pixelCanvas" width="128" height="128"></canvas>
     </div>
     <div class="info">
-        Размер холста: 1024×1024 пикселя. Каждый пиксель — это клетка. Используйте масштабирование браузера или скролл.
+        Холст 128×128 пикселей. Можно рисовать по одному пикселю.
     </div>
     
     <script src="/socket.io/socket.io.js"></script>
